@@ -343,11 +343,11 @@ public class Assembler {
                     }
                     break;
                 }
-                case OP_LOADBOOL: {//rA <bool>或者rA <bool> <bool>
+                case OP_LOADBOOL: {//rA <bool>或者rA <bool> <bool>或者rA <bool> goto_XX
                     sb.append("r").append(instruction.A()).append(" ")
                             .append(instruction.B() != 0).append(" ");
                     if (instruction.C() != 0) {
-                        sb.append(instruction.C() != 0);
+                        sb.append("goto_").append(i + 1 + 1);
                     }
                     if (needNote) {
                         sb.append(" $ 加载布尔值（").append(instruction.B() != 0).append("）到寄存器（r").append(instruction.A()).append("）");
@@ -907,14 +907,14 @@ public class Assembler {
                     }
                     break;
                 }
-                case OP_JMP: {//<sBx>或者<A> <sBx>
+                case OP_JMP: {//<sBx>或者<A> <sBx>或者goto_XX或者<A> goto_XX
                     if (instruction.A() == 0) {
-                        sb.append(instruction.sBx());
+                        sb.append("goto_").append(i + 1 + instruction.sBx());
                         if (needNote) {
                             sb.append(" $ 无条件跳转");
                         }
                     } else {
-                        sb.append(instruction.A()).append(" ").append(instruction.sBx());
+                        sb.append(instruction.A()).append(" ").append("goto_").append(i + 1 + instruction.sBx());
                         if (needNote) {
                             sb.append(" $ 关闭寄存器（r").append(instruction.A() - 1).append("）以及更高层的值，然后跳转");
                         }
@@ -1153,15 +1153,15 @@ public class Assembler {
                     }
                     break;
                 }
-                case OP_FORLOOP: {//rA <sBx>
-                    sb.append("r").append(instruction.A()).append(" ").append(instruction.sBx());
+                case OP_FORLOOP: {//rA <sBx>或者rA goto_XX
+                    sb.append("r").append(instruction.A()).append(" ").append("goto_").append(i + 1 + instruction.sBx());
                     if (needNote) {
                         sb.append(" $ 循环指令，增长相应步长后跳转");
                     }
                     break;
                 }
-                case OP_FORPREP: {//rA <sBx>
-                    sb.append("r").append(instruction.A()).append(" ").append(instruction.sBx());
+                case OP_FORPREP: {//rA <sBx>或者rA goto_XX
+                    sb.append("r").append(instruction.A()).append(" ").append("goto_").append(i + 1 + instruction.sBx());
                     if (needNote) {
                         sb.append(" $ 循环指令，准备循环，把循环变量减去步长，然后跳转");
                     }
@@ -1174,8 +1174,8 @@ public class Assembler {
                     }
                     break;
                 }
-                case OP_TFORLOOP: {//rA <sBx>
-                    sb.append("r").append(instruction.A()).append(" ").append(instruction.sBx());
+                case OP_TFORLOOP: {//rA <sBx>或者rA goto_XX
+                    sb.append("r").append(instruction.A()).append("goto_").append(i + 1 + instruction.sBx());
                     if (needNote) {
                         sb.append(" $ 循环指令，如果寄存器（r").append(instruction.A() + 1).append("）非nil，则跳转");
                     }
