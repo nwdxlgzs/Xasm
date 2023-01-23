@@ -181,6 +181,14 @@ public class TValue implements Serializable {
                             sb.append(new String(data, start, i - start));
                             sb.append("\\\\");
                             start = i + 1;
+                        }else if (data[i] == '\b') {
+                            sb.append(new String(data, start, i - start));
+                            sb.append("\\b");
+                            start = i + 1;
+                        }else if (data[i] == '\f') {
+                            sb.append(new String(data, start, i - start));
+                            sb.append("\\f");
+                            start = i + 1;
                         }
                     }
                     if (start < data.length) {
