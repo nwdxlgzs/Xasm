@@ -407,9 +407,6 @@ public class defines {
         int i;
         byte[] str2 = new byte[str.length];
         for (i = 0; i < str.length; i++) {
-            if (str[i] == 0) {//乐，这个0不用解释了吧
-                return StringContentLevel.STR_CONTENT_BUFFER;
-            }
             if (str[i] < 32 || str[i] > 126) {
                 passAllSymbolAnd09azAz = false;
                 str2[i] = str[i];
