@@ -84,7 +84,6 @@ public class bindInst {
                 }
                 case OP_MOVE:
                 case OP_LOADNIL:
-
                 case OP_NEWARRAY:
                 case OP_UNM:
                 case OP_BNOT:
