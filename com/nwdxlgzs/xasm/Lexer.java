@@ -282,6 +282,20 @@ public class Lexer {
         }
     }
 
+
+    protected final boolean isNumber(String str) {
+        boolean isNumber = true;
+        int index = 0;
+        while (index < str.length()) {
+            if (!isDigit(str.charAt(index))) {
+                isNumber = false;
+                break;
+            }
+            index++;
+        }
+        return isNumber;
+    }
+
     protected Tokens scanIdentifier() {
         throwIfNeeded();
 
@@ -290,15 +304,16 @@ public class Lexer {
         //呃不对，还有注释啥的。。
         char ch;
         while (!isWhitespace((ch = peekCharWithLength()))) {
-            if (ch == '$') {
+            length++;
+            if (isSymbol(ch)) {
                 break;
             }
-            length++;
         }
 
-        String tokenText = getTokenText();
+        System.out.println(ch == '\r');
 
-        System.out.println(tokenText);
+
+        String tokenText = getTokenText();
 
         for (String keyword : opCodeKeyWords) {
             if (tokenText.startsWith(keyword)) {
@@ -309,15 +324,7 @@ public class Lexer {
         // opxx
         if (tokenText.startsWith("op")) {
             String tokenTextSub = tokenText.substring(2, tokenText.length() - 1);
-            int index = 0;
-            boolean isNumber = true;
-            while (index < tokenTextSub.length()) {
-                if (!isDigit(tokenTextSub.charAt(index))) {
-                    isNumber = false;
-                    break;
-                }
-                index++;
-            }
+            boolean isNumber = isNumber(tokenTextSub);
             if (isNumber) {
                 return Tokens.OP_KEYWORD;
             }
@@ -327,17 +334,22 @@ public class Lexer {
         // goto_
         if (tokenText.startsWith("goto_")) {
             String tokenTextSub = tokenText.substring(5, tokenText.length() - 1);
-            int index = 0;
-            boolean isNumber = true;
-            while (index < tokenTextSub.length()) {
-                if (!isDigit(tokenTextSub.charAt(index))) {
-                    isNumber = false;
-                    break;
-                }
-                index++;
-            }
+            boolean isNumber = isNumber(tokenTextSub);
             if (isNumber) {
                 return Tokens.OP_KEYWORD;
+            }
+        }
+
+        // rxx,uxx,kxx,pxx
+        if (tokenText.charAt(0) == 'r' || tokenText.charAt(0) == 'k' ||
+                tokenText.charAt(0) == 'u' || tokenText.charAt(0) == 'p') {
+            if (tokenText.length() < 2) {
+                return Tokens.IDENTIFIER;
+            }
+            String tokenTextSub = tokenText.substring(1, tokenText.length() - 1);
+            boolean isNumber = isNumber(tokenTextSub);
+            if (isNumber) {
+                return Tokens.OP_ARG;
             }
         }
 
@@ -374,7 +386,11 @@ public class Lexer {
     }
 
     protected static boolean isDigit(char c) {
-        return ((c >= '0' && c <= '9'));
+        return (c >= '0' && c <= '9');
+    }
+
+    protected static boolean isSymbol(char c) {
+        return (c == '$' || c == '>' || c == '<' || c == ';' || c == '.');
     }
 
     protected static boolean isWhitespace(char c) {
@@ -399,14 +415,14 @@ public class Lexer {
 
         LINE_COMMENT,
 
-        DIV, MULT, IDENTIFIER, INTEGER_LITERAL, DOT, MINUS, STRING, CHARACTER_LITERAL, LPAREN, RPAREN, LBRACE, RBRACE, LBRACK, RBRACK, COMMA, EQ, GT, LT, NOT, COMP, QUESTION, COLON, AND, OR, PLUS, XOR, MOD, FLOATING_POINT_LITERAL, SEMICOLON,
+        DIV, MULT, IDENTIFIER, INTEGER_LITERAL, DOT, MINUS, STRING, CHARACTER_LITERAL, LPAREN, RPAREN, LBRACE, RBRACE, LBRACK, RBRACK, COMMA, EQ, GT, LT, NOT, COMP, QUESTION, COLON, AND, OR, PLUS, XOR, MOD, SEMICOLON,
 
         PROTO_KEYWORD,
 
         CODE_KEYWORD, FUNCTION_KEYWORD,
 
         OP_KEYWORD,
-
+        OP_ARG,
 
         VALUE_KEYWORD,
     }
