@@ -412,16 +412,22 @@ public class Lexer {
         throwIfNeeded();
 
         char current = 0;
-        char last = 0;
 
         //由于有转义符号的存在，不能直接判断是否为"\"
         while (true) {
-            last = current;
             current = peekCharWithLength();
 
             length++;
 
-            if (current == '"' && last != '\\') {
+            if (current == '\\') {
+                current = peekCharWithLength();
+                if (current == '\\' || current == 't' || current == 'f' || current == 'n' || current == 'r' || current == '0' || current == '\"' || current == '\''
+                        || current == 'b') {
+                    length++;
+                }
+            }
+
+            if (current == '"' || current == '\n') {
                 break;
             }
 
