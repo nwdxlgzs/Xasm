@@ -332,28 +332,28 @@ public class Lexer {
                 // -()
                 length++;
             } else if (ch == '>') {
+                // ->
                 length++;
                 return Tokens.OPERATOR;
             }
             return Tokens.OP_KEYWORD;
         } else if (ch == '<') {
             // < <= <<
-            ch = peekCharWithLength(1);
-            if (ch == '<' && (((length++) > 0) && matchBracket('<', '='))) {
+            if (matchBracket('<', '=')) {
                 // <=
                 length++;
-            } else if (ch == '<' && (((length++) > 0) && matchBracket('<', '<'))) {
+            } else if (matchBracket('<', '<')) {
                 // <<
                 length++;
             }
             return Tokens.OP_KEYWORD;
         } else if (ch == '>') {
             // > >= >>
-            ch = peekCharWithLength(1);
-            if (ch == '>' && (((length++) > 0) && matchBracket('>', '='))) {
+
+            if (matchBracket('>', '=')) {
                 // >=
                 length++;
-            } else if (ch == '>' && (((length++) > 0) && matchBracket('>', '>'))) {
+            } else if (matchBracket('>', '>')) {
                 // >>
                 length++;
             }
@@ -383,8 +383,8 @@ public class Lexer {
     }
 
     private boolean matchBracket(char left, char right) {
-        char currentLeft = peekCharWithLength(1);
-        char currentRight = peekCharWithLength(2);
+        char currentLeft = peekCharWithLength(-1);
+        char currentRight = peekCharWithLength(0);
         return currentLeft == left && currentRight == right;
     }
 
@@ -419,17 +419,17 @@ public class Lexer {
 
             length++;
 
+            if (current == '"' || current == '\n') {
+                break;
+            }
+
             if (current == '\\') {
                 current = peekCharWithLength();
-                if (current == '\\' || current == 't' || current == 'f' || current == 'n' || current == 'r' || current == '0' || current == '\"' || current == '\''
-                        || current == 'b') {
+                if (current == '\\' || current == 't' || current == 'f' || current == 'n' || current == 'r' || current == '0' || current == '\"' || current == 'b' || current == '\'') {
                     length++;
                 }
             }
 
-            if (current == '"' || current == '\n') {
-                break;
-            }
 
             if (offset + length >= bufferLen) {
                 throw new RuntimeException("缺少正常的\"");
