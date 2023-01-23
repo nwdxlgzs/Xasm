@@ -8,6 +8,7 @@ public class Instruction implements Serializable {
     private int value = 0;
     //下方两个辅助汇编用的，不是Instruction该有的信息，toString我就不处理了
     public boolean isCanJump2There = false;
+    public boolean isRealFake = false;
 
     public Instruction(int instruction) {
         value = instruction;
