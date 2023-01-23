@@ -22,7 +22,7 @@ public class bindInst {
                 }
                 case OP_LOADBOOL: {//OP_LOADBOOL特例
                     if (instruction.C() != 0) {
-                        int target = i + 1;
+                        int target = i + 2;
                         if (target < sizecode) {
                             code[target].isCanJump2There = true;
                         }
