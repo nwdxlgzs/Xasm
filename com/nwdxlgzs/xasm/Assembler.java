@@ -222,6 +222,9 @@ public class Assembler {
             if (instruction.isRealFake) {
                 sb.append("$ 这是下方指令绝对不可能被执行，否则会遇到完全未知的错误，请考虑附近指令是否为假块。\n");
             }
+            if (instruction.isStartRealFake) {
+                sb.append("$ =================开始假块=================\n");
+            }
             if (likeActCode) {
                 switch (opcode) {
                     case OP_ADD: {
@@ -1262,6 +1265,9 @@ public class Assembler {
                 }
             }
             sb.append("\n");
+            if (instruction.isEndRealFake) {
+                sb.append("$ =================结束假块=================\n");
+            }
         }
         sb.append(".code-end");
         sb.append("\n");
