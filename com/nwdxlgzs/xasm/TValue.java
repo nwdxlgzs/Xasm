@@ -143,20 +143,9 @@ public class TValue implements Serializable {
             byte[] data = (byte[]) value_;
             StringContentLevel level = TStringCheck(data);
             switch (level) {
-                case STR_CONTENT_QUOTESTRING: {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("\"");
-                    int start = 0;
-                    for (int i = 0; i < data.length; i++) {
-                        if (data[i] == '"') {
-                            sb.append(new String(data, start, i - start));
-                            sb.append("\\\"");
-                            start = i + 1;
-                        }
-                    }
-                    sb.append("\"");
-                    return sb.toString();
-                }
+                            byte[] data = (byte[]) value_;
+            StringContentLevel level = TStringCheck(data);
+            switch (level) {
                 case STR_CONTENT_BUFFER: {
                     StringBuilder sb = new StringBuilder();
                     sb.append("\"");
@@ -168,7 +157,45 @@ public class TValue implements Serializable {
                 }
                 case STR_CONTENT_STRING:
                 default: {
-                    return "\"" + new String(data) + "\"";
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("\"");
+                    int start = 0;
+                    for (int i = 0; i < data.length; i++) {
+                        if (data[i] == '"') {
+                            sb.append(new String(data, start, i - start));
+                            sb.append("\\\"");
+                            start = i + 1;
+                        } else if (data[i] == '\t') {
+                            sb.append(new String(data, start, i - start));
+                            sb.append("\\t");
+                            start = i + 1;
+                        }else if (data[i] == '\r') {
+                            sb.append(new String(data, start, i - start));
+                            sb.append("\\r");
+                            start = i + 1;
+                        }else if (data[i] == '\n') {
+                            sb.append(new String(data, start, i - start));
+                            sb.append("\\n");
+                            start = i + 1;
+                        }else if (data[i] == '\\') {
+                            sb.append(new String(data, start, i - start));
+                            sb.append("\\\\");
+                            start = i + 1;
+                        }else if (data[i] == '\b') {
+                            sb.append(new String(data, start, i - start));
+                            sb.append("\\b");
+                            start = i + 1;
+                        }else if (data[i] == '\f') {
+                            sb.append(new String(data, start, i - start));
+                            sb.append("\\f");
+                            start = i + 1;
+                        }
+                    }
+                    if (start < data.length) {
+                        sb.append(new String(data, start, data.length - start));
+                    }
+                    sb.append("\"");
+                    return sb.toString();
                 }
             }
         } else {

@@ -68,7 +68,6 @@ public class Assembler {
         StringBuilder sb = new StringBuilder();
         sb.append(".function main");
         sb.append(subPath == null ? "" : subPath);
-        sb.append(";");
         if (needNote) {
             if (f != proto) {
                 sb.append(" $ 当前根索引函数原型路径");
@@ -79,12 +78,11 @@ public class Assembler {
         sb.append("\n");
         sb.append(".sub-parse ");
         sb.append(needSubXasm);
-        sb.append(";");
         if (needNote) {
             if (needSubXasm) {
                 sb.append(" $ 本Xasm也会解析子函数");
             } else {
-                sb.append(" $ 本Xasm直接洗本函数，子函数将不进行解析");
+                sb.append(" $ 本Xasm只解析本函数，子函数将不进行解析");
             }
         }
         sb.append("\n");
@@ -94,7 +92,6 @@ public class Assembler {
         } else {
             sb.append(f.source.toWarpString());
         }
-        sb.append(";");
         if (needNote) {
             if (f.source == null || f.source.equals(NIL)) {
                 sb.append(" $ 当前函数原型没有指定源文件");
@@ -112,7 +109,7 @@ public class Assembler {
             }
         }
         sb.append("\n");
-        sb.append(".is_vararg ").append(f.is_vararg).append(";");
+        sb.append(".is_vararg ").append(f.is_vararg);
         if (needNote) {
             if (f.is_vararg == 0) {
                 sb.append(" $ 没使用变参");
@@ -125,17 +122,17 @@ public class Assembler {
             }
         }
         sb.append("\n");
-        sb.append(".maxstacksize ").append(f.maxstacksize).append(";");
+        sb.append(".maxstacksize ").append(f.maxstacksize);
         if (needNote) {
             sb.append(" $ 最大栈大小，合法值为0~250（255是理论的，但是虚拟机支持到250）");
         }
         sb.append("\n");
-        sb.append(".numparams ").append(f.numparams).append(";");
+        sb.append(".numparams ").append(f.numparams);
         if (needNote) {
             sb.append(" $ 固定的形参个数");
         }
         sb.append("\n");
-        sb.append(".linedefined ").append(f.linedefined).append(";");
+        sb.append(".linedefined ").append(f.linedefined);
         if (needNote) {
             if (f != proto) {
                 sb.append(" $ 起始定义的行号");
@@ -144,7 +141,7 @@ public class Assembler {
             }
         }
         sb.append("\n");
-        sb.append(".lastlinedefined ").append(f.lastlinedefined).append(";");
+        sb.append(".lastlinedefined ").append(f.lastlinedefined);
         if (needNote) {
             if (f != proto) {
                 sb.append(" $ 结束定义的行号");
@@ -162,7 +159,7 @@ public class Assembler {
             LocVar lv = f.locvars[i];
             sb.append(".locvars ")
                     .append(lv.varname.toVarString()).append(" ")
-                    .append(lv.startpc).append(" -> ").append(lv.endpc).append(";");
+                    .append(lv.startpc).append(" -> ").append(lv.endpc);
             sb.append("\n");
         }
         sb.append("\n");//成组出现，多加入一次换行
@@ -174,7 +171,7 @@ public class Assembler {
             Upvaldesc uv = f.upvalues[i];
             sb.append(".upvaldesc ")
                     .append(uv.name.toVarString()).append(" ")
-                    .append(uv.idx).append(" ").append(uv.instack).append(";");
+                    .append(uv.idx).append(" ").append(uv.instack);
             sb.append("\n");
         }
         sb.append("\n");//成组出现，多加入一次换行
@@ -285,7 +282,7 @@ public class Assembler {
                         break;
                     }
                     case OP_EQ: {
-                        if (instruction.A() != 0) {
+                        if (instruction.A() == 0) {
                             sb.append("~= ");
                         } else {
                             sb.append("== ");
@@ -293,7 +290,7 @@ public class Assembler {
                         break;
                     }
                     case OP_LT: {
-                        if (instruction.A() != 0) {
+                        if (instruction.A() == 0) {
                             sb.append("< ");
                         } else {
                             sb.append("> ");
@@ -301,7 +298,7 @@ public class Assembler {
                         break;
                     }
                     case OP_LE: {
-                        if (instruction.A() != 0) {
+                        if (instruction.A() == 0) {
                             sb.append("<= ");
                         } else {
                             sb.append("=> ");
@@ -343,11 +340,11 @@ public class Assembler {
                     }
                     break;
                 }
-                case OP_LOADBOOL: {//rA <bool>或者rA <bool> <bool>
+                case OP_LOADBOOL: {//rA <bool>或者rA <bool> <bool>或者rA <bool> goto_XX
                     sb.append("r").append(instruction.A()).append(" ")
                             .append(instruction.B() != 0).append(" ");
                     if (instruction.C() != 0) {
-                        sb.append(instruction.C() != 0);
+                        sb.append("goto_").append(i + 1 + 1);
                     }
                     if (needNote) {
                         sb.append(" $ 加载布尔值（").append(instruction.B() != 0).append("）到寄存器（r").append(instruction.A()).append("）");
@@ -907,14 +904,14 @@ public class Assembler {
                     }
                     break;
                 }
-                case OP_JMP: {//<sBx>或者<A> <sBx>
+                case OP_JMP: {//<sBx>或者<A> <sBx>或者goto_XX或者<A> goto_XX
                     if (instruction.A() == 0) {
-                        sb.append(instruction.sBx());
+                        sb.append("goto_").append(i + 1 + instruction.sBx());
                         if (needNote) {
                             sb.append(" $ 无条件跳转");
                         }
                     } else {
-                        sb.append(instruction.A()).append(" ").append(instruction.sBx());
+                        sb.append(instruction.A()).append(" ").append("goto_").append(i + 1 + instruction.sBx());
                         if (needNote) {
                             sb.append(" $ 关闭寄存器（r").append(instruction.A() - 1).append("）以及更高层的值，然后跳转");
                         }
@@ -1153,15 +1150,15 @@ public class Assembler {
                     }
                     break;
                 }
-                case OP_FORLOOP: {//rA <sBx>
-                    sb.append("r").append(instruction.A()).append(" ").append(instruction.sBx());
+                case OP_FORLOOP: {//rA <sBx>或者rA goto_XX
+                    sb.append("r").append(instruction.A()).append(" ").append("goto_").append(i + 1 + instruction.sBx());
                     if (needNote) {
                         sb.append(" $ 循环指令，增长相应步长后跳转");
                     }
                     break;
                 }
-                case OP_FORPREP: {//rA <sBx>
-                    sb.append("r").append(instruction.A()).append(" ").append(instruction.sBx());
+                case OP_FORPREP: {//rA <sBx>或者rA goto_XX
+                    sb.append("r").append(instruction.A()).append(" ").append("goto_").append(i + 1 + instruction.sBx());
                     if (needNote) {
                         sb.append(" $ 循环指令，准备循环，把循环变量减去步长，然后跳转");
                     }
@@ -1174,8 +1171,8 @@ public class Assembler {
                     }
                     break;
                 }
-                case OP_TFORLOOP: {//rA <sBx>
-                    sb.append("r").append(instruction.A()).append(" ").append(instruction.sBx());
+                case OP_TFORLOOP: {//rA <sBx>或者rA goto_XX
+                    sb.append("r").append(instruction.A()).append("goto_").append(i + 1 + instruction.sBx());
                     if (needNote) {
                         sb.append(" $ 循环指令，如果寄存器（r").append(instruction.A() + 1).append("）非nil，则跳转");
                     }

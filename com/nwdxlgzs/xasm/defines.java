@@ -399,30 +399,26 @@ public class defines {
 
     public static enum StringContentLevel {
         STR_CONTENT_STRING,
-        STR_CONTENT_QUOTESTRING,
         STR_CONTENT_BUFFER,
     }
 
     public static StringContentLevel TStringCheck(byte[] str) {
-        boolean findQuote = false;//引号查找
         boolean passAllSymbolAnd09azAz = true;//是否全是符号
         int i;
         byte[] str2 = new byte[str.length];
         for (i = 0; i < str.length; i++) {
-            if (str[i] == '"') {
-                findQuote = true;
-            } else if (str[i] == 0) {//乐，这个0不用解释了吧
+            if (str[i] == 0) {//乐，这个0不用解释了吧
                 return StringContentLevel.STR_CONTENT_BUFFER;
             }
             if (str[i] < 32 || str[i] > 126) {
                 passAllSymbolAnd09azAz = false;
                 str2[i] = str[i];
             } else {
-                str2[i] = (byte) 'a';
+                str2[i] = (byte) 'a';//字符有问题，很奇怪
             }
         }
         if (passAllSymbolAnd09azAz) {
-            return findQuote ? StringContentLevel.STR_CONTENT_QUOTESTRING : StringContentLevel.STR_CONTENT_STRING;
+            return StringContentLevel.STR_CONTENT_STRING;
         }
         //测试UTF8和GBK编码，没通过那就认为是乱码
         CharsetDecoder decoder = Charset.forName("UTF-8").newDecoder();
@@ -437,6 +433,6 @@ public class defines {
         } catch (CharacterCodingException e) {
             return StringContentLevel.STR_CONTENT_BUFFER;
         }
-        return findQuote ? StringContentLevel.STR_CONTENT_QUOTESTRING : StringContentLevel.STR_CONTENT_STRING;
+        return StringContentLevel.STR_CONTENT_STRING;
     }
 }
