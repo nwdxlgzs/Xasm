@@ -1,3 +1,13 @@
+/*
+ * Xasm汇编文件结构：
+ * 1：.function到.end之间为一个函数原型
+ * 2：.function后跟索引路径，根为main，索引路径用/分割，如main/0/1/2
+ * 3：.sub-parse <bool>是否这个汇编文件也解析了目标函数子函数
+ * 4：.source <string>对应Proto的source，nil表示没有
+ * 5：.is_vararg/.maxstacksize/.numparams/.linedefined/.lastlinedefined <int>对应Proto的is_vararg/maxstacksize/numparams/linedefined/lastlinedefined
+ * 6：sizep/sizek/sizecode/sizeupvalues/sizelineinfo/sizelocvars等不使用，根据解析内容自动回补
+ *
+ */
 package com.nwdxlgzs.xasm;
 
 import static com.nwdxlgzs.xasm.TValue.*;
