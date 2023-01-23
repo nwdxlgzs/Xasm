@@ -12,6 +12,7 @@
  * 10：.line <int>对应Proto的lineinfo，int为行号（特别的，0不会显示，上一次的line和本次一致也会不显示）
  * 11：.goto_XX是辅助表示跳转指令的跳转目的地
  * 12：每个指令表示结构并不完全一样，请看case分支处注释。
+ * 13：字符串转义规则：\t\n\b\f\"\r\\\0，\xXX表示16进制字符
  */
 package com.nwdxlgzs.xasm;
 
@@ -305,7 +306,7 @@ public class Assembler {
                         break;
                     }
                     case OP_LT: {
-                        if (instruction.A() == 0) {
+                        if (instruction.A() != 0) {
                             sb.append("< ");
                         } else {
                             sb.append("> ");
@@ -313,7 +314,7 @@ public class Assembler {
                         break;
                     }
                     case OP_LE: {
-                        if (instruction.A() == 0) {
+                        if (instruction.A() != 0) {
                             sb.append("<= ");
                         } else {
                             sb.append("=> ");
