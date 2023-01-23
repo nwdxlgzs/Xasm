@@ -1,18 +1,90 @@
 package com.nwdxlgzs.xasm;
 
+import static com.nwdxlgzs.xasm.OPCode.*;
+import static com.nwdxlgzs.xasm.defines.*;
+
 public class bindInst {
     public static void bind(Proto f) {
         int i;
         Instruction[] code = f.code;
+        int sizek = f.sizek();
+        int sizeupvalues = f.sizeupvalues();
+        int sizep = f.sizep();
         int sizecode = f.sizecode();
         for (i = 0; i < sizecode; i++) {
             Instruction instruction = code[i];
             OPCode op = instruction.getOpCode();
             switch (op) {
+                case OP_CLOSURE: {//溢出检查
+                    if (instruction.Bx() >= sizep) {
+                        instruction.isRealFake = true;
+                    }
+                    break;
+                }
+                case OP_LOADK: {//溢出检查
+                    if (instruction.B() >= sizek) {
+                        instruction.isRealFake = true;
+                    }
+                    break;
+                }
+                case OP_SETTABUP: {//溢出检查
+                    if (instruction.A() >= sizeupvalues) {
+                        instruction.isRealFake = true;
+                    }
+                    //这里不用break，因为还要溢出检查
+                }
+                case OP_SETTABLE:
+                case OP_ADD:
+                case OP_SUB:
+                case OP_MUL:
+                case OP_MOD:
+                case OP_POW:
+                case OP_DIV:
+                case OP_IDIV:
+                case OP_BAND:
+                case OP_BOR:
+                case OP_BXOR:
+                case OP_SHL:
+                case OP_SHR: {//溢出检查
+                    if (ISK(instruction.B()) && INDEXK(instruction.B()) >= sizek) {
+                        instruction.isRealFake = true;
+                    }
+                    //这里不用break，因为还要检查C
+                }
+                case OP_GETTABLE:
+                case OP_SELF: {//溢出检查
+                    if (ISK(instruction.C()) && INDEXK(instruction.C()) >= sizek) {
+                        instruction.isRealFake = true;
+                    }
+                    break;
+                }
+                case OP_GETTABUP: {
+                    if (ISK(instruction.C()) && INDEXK(instruction.C()) >= sizek) {//溢出检查
+                        instruction.isRealFake = true;
+                    }
+                    if (instruction.B() >= sizeupvalues) {//溢出检查
+                        instruction.isRealFake = true;
+                    }
+                    break;
+                }
+                case OP_SETUPVAL: {
+                    if (instruction.C() != 0) {//填补没用的操作数C
+                        instruction.C(0);
+                    }
+                    if (instruction.B() >= sizeupvalues) {//溢出检查
+                        instruction.isRealFake = true;
+                    }
+                    break;
+                }
+                case OP_GETUPVAL: {//溢出检查
+                    if (instruction.B() >= sizeupvalues) {
+                        instruction.isRealFake = true;
+                    }
+                    //这里不用break，因为还要检查C
+                }
                 case OP_MOVE:
                 case OP_LOADNIL:
-                case OP_GETUPVAL:
-                case OP_SETUPVAL:
+
                 case OP_NEWARRAY:
                 case OP_UNM:
                 case OP_BNOT:
@@ -40,6 +112,12 @@ public class bindInst {
                     int target = i + 1;
                     if (target < sizecode) {
                         code[target].isCanJump2There = true;
+                        Instruction instruction2 = code[target];
+                        if (instruction2.Ax() >= sizek) {
+                            instruction2.isRealFake = true;
+                        }
+                    } else {
+                        instruction.isRealFake = true;
                     }
                     if (instruction.Bx() != 0) {//填补没用的操作数Bx
                         instruction.Bx(0);
@@ -51,6 +129,8 @@ public class bindInst {
                         int target = i + 2;
                         if (target < sizecode) {
                             code[target].isCanJump2There = true;
+                        } else {
+                            instruction.isRealFake = true;
                         }
                     }
                     if (instruction.B() > 1) {//B就只有0和非0（1）两种情况
@@ -66,10 +146,12 @@ public class bindInst {
                     int target = i + 1 + sBx;
                     if (target >= 0 && target < sizecode) {
                         code[target].isCanJump2There = true;
+                    } else {
+                        instruction.isRealFake = true;
                     }
                     break;
                 }
-                case OP_TFORCALL: {//填补没用的操作数B以及当前指令+下一句sBx（case冲突，java怎么没goto啊）
+                case OP_TFORCALL: {//填补没用的操作数B以及当前指令+下一句sBx
                     if (instruction.B() != 0) {
                         instruction.B(0);
                     }
@@ -81,7 +163,11 @@ public class bindInst {
                         target = i + 2 + sBx;
                         if (target >= 0 && target < sizecode) {
                             code[target].isCanJump2There = true;
+                        } else {
+                            instruction.isRealFake = true;
                         }
+                    } else {
+                        instruction.isRealFake = true;
                     }
                     break;
                 }
@@ -90,6 +176,12 @@ public class bindInst {
                 case OP_LE: {
                     if (instruction.A() > 1) {//A就只有0和非0（1）两种情况
                         instruction.A(1);
+                    }
+                    if (ISK(instruction.B()) && INDEXK(instruction.B()) >= sizek) {//溢出检查
+                        instruction.isRealFake = true;
+                    }
+                    if (ISK(instruction.C()) && INDEXK(instruction.C()) >= sizek) {//溢出检查
+                        instruction.isRealFake = true;
                     }
                     //没有break，因为还有后续处理
                 }
@@ -103,7 +195,11 @@ public class bindInst {
                         target = i + 2 + sBx;
                         if (target >= 0 && target < sizecode) {
                             code[target].isCanJump2There = true;
+                        } else {
+                            instruction.isRealFake = true;
                         }
+                    } else {
+                        instruction.isRealFake = true;
                     }
                     break;
                 }
@@ -112,11 +208,16 @@ public class bindInst {
                         int target = i + 1;
                         if (target < sizecode) {
                             code[target].isCanJump2There = true;
+                        } else {
+                            instruction.isRealFake = true;
                         }
                     }
                     break;
                 }
                 default: {
+                    if (op.getOP() >= OP_OP50.getOP()) {
+                        instruction.isRealFake = true;
+                    }
                     break;
                 }
             }
