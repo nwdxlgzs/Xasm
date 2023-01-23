@@ -38,7 +38,7 @@ public class Lexer {
     };
 
     private String[] codeKeywords = {
-            "code-start", "code-end"
+            "code-start", "code-end", "line"
     };
 
     private String[] valueKeyWords = {
@@ -238,10 +238,7 @@ public class Lexer {
 
         //数字
         if (isDigit(ch)) {
-            while (offset + length < bufferLen && isDigit(peekCharWithLength())) {
-                length++;
-            }
-            return Tokens.INTEGER_LITERAL;
+            return scanNumber();
         }
 
         // keyword
@@ -253,6 +250,11 @@ public class Lexer {
         if (ch == '.') {
             char nextChar = peekCharWithLength(1);
 
+            if (nextChar == '.') {
+                // ..
+                return Tokens.OP_KEYWORD;
+            }
+
             if (isLetter(nextChar)) {
                 // 这里是移除点
                 index++;
@@ -263,10 +265,6 @@ public class Lexer {
                 return result;
             }
 
-            if (nextChar == '.') {
-                // ..
-                return Tokens.OP_KEYWORD;
-            }
 
             return Tokens.DOT;
         }
@@ -363,6 +361,25 @@ public class Lexer {
         }
 
         return Tokens.UNKNOWN;
+    }
+
+    private Tokens scanNumber() {
+        char ch;
+        boolean hasDot = false;
+        while (offset + length < bufferLen) {
+            boolean isDigit = isDigit((ch = peekCharWithLength()));
+            if (!isDigit && ch == '.') {
+                if (hasDot) {
+                    throw new RuntimeException("错误的语法！在 (" + line + "," + (column + length) + ") 处 重复定义了.");
+                } else {
+                    hasDot = true;
+                }
+            } else if (!isDigit) {
+                break;
+            }
+            length++;
+        }
+        return hasDot ? Tokens.FLOAT_LITERAL : Tokens.INTEGER_LITERAL;
     }
 
     private boolean matchBracket(char left, char right) {
@@ -542,6 +559,6 @@ public class Lexer {
         STRING,
         DOT, OPERATOR, SEMICOLON,
         PROTO_KEYWORD, CODE_KEYWORD, FUNCTION_KEYWORD,
-        OP_KEYWORD, OP_ARG, VALUE_KEYWORD,
+        OP_KEYWORD, OP_ARG, VALUE_KEYWORD, FLOAT_LITERAL,
     }
 }
