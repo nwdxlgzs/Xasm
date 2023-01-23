@@ -285,7 +285,7 @@ public class Assembler {
                         break;
                     }
                     case OP_EQ: {
-                        if (instruction.A() != 0) {
+                        if (instruction.A() == 0) {
                             sb.append("~= ");
                         } else {
                             sb.append("== ");
@@ -293,7 +293,7 @@ public class Assembler {
                         break;
                     }
                     case OP_LT: {
-                        if (instruction.A() != 0) {
+                        if (instruction.A() == 0) {
                             sb.append("< ");
                         } else {
                             sb.append("> ");
@@ -301,7 +301,7 @@ public class Assembler {
                         break;
                     }
                     case OP_LE: {
-                        if (instruction.A() != 0) {
+                        if (instruction.A() == 0) {
                             sb.append("<= ");
                         } else {
                             sb.append("=> ");
