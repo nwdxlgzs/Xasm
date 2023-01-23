@@ -84,7 +84,7 @@ public class Assembler {
             if (needSubXasm) {
                 sb.append(" $ 本Xasm也会解析子函数");
             } else {
-                sb.append(" $ 本Xasm直接洗本函数，子函数将不进行解析");
+                sb.append(" $ 本Xasm只解析本函数，子函数将不进行解析");
             }
         }
         sb.append("\n");
