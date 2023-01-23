@@ -104,8 +104,6 @@ public class Lexer {
             "nle",
             "func",
             "def",
-
-
     };
 
     public Lexer(CharSequence src) {
@@ -185,12 +183,10 @@ public class Lexer {
     }
 
     private TokenState wrapState(Tokens token) {
-        TokenState state = new TokenState(token, length, offset);
-        return state;
+        return new TokenState(token, length, offset);
     }
 
     private TokenState calcLineAndColumn(Tokens result) {
-
         column += lastTokenState.length;
 
         if (lastTokenState.token == Tokens.NEWLINE) {
@@ -267,6 +263,11 @@ public class Lexer {
                 return result;
             }
 
+            if (nextChar == '.') {
+                // ..
+                return Tokens.OP_KEYWORD;
+            }
+
             return Tokens.DOT;
         }
 
@@ -275,7 +276,99 @@ public class Lexer {
             return scanString();
         }
 
+        //处理opcode
+        //有的opcode使用多个符号，需要消费长度
+        if (ch == '~') {
+            // ~ ~= ~()
+            ch = peekCharWithLength(1);
+            if (ch == '=') {
+                // ~=
+                length++;
+            } else if (ch == '(' && (((length++) > 0) && matchBracket('(', ')'))) {
+                // ~()
+                length++;
+            }
+            return Tokens.OP_KEYWORD;
+        } else if (ch == '/') {
+            if (matchBracket('/', '/')) {
+                // '//'
+                length++;
+            }
+            return Tokens.OP_KEYWORD;
+        } else if (ch == '&') {
+            return Tokens.OP_KEYWORD;
+        } else if (ch == '#') {
+            return Tokens.OP_KEYWORD;
+        } else if (ch == '|') {
+            return Tokens.OP_KEYWORD;
+        } else if (ch == '+') {
+            return Tokens.OP_KEYWORD;
+        } else if (ch == '*') {
+            return Tokens.OP_KEYWORD;
+        } else if (ch == '^') {
+            return Tokens.OP_KEYWORD;
+        } else if (ch == '=' && matchBracket('=', '=')) {
+            // ==
+            length++;
+            return Tokens.OP_KEYWORD;
+        } else if (ch == '{' && matchBracket('{', '}')) {
+            // {}
+            length++;
+            return Tokens.OP_KEYWORD;
+        } else if (ch == '[' && matchBracket('[', ']')) {
+            // {}
+            length++;
+            return Tokens.OP_KEYWORD;
+        } else if (ch == '!' && matchBracket('!', '=')) {
+            // {}
+            length++;
+            return Tokens.OP_KEYWORD;
+        } else if (ch == '[' && matchBracket('[', ']')) {
+            // []
+            length++;
+            return Tokens.OP_KEYWORD;
+        } else if (ch == '-') {
+            // - -()
+            ch = peekCharWithLength(1);
+            if (ch == '(' && (((length++) > 0) && matchBracket('(', ')'))) {
+                // -()
+                length++;
+            } else if (ch == '>') {
+                length++;
+                return Tokens.OPERATOR;
+            }
+            return Tokens.OP_KEYWORD;
+        } else if (ch == '<') {
+            // < <= <<
+            ch = peekCharWithLength(1);
+            if (ch == '<' && (((length++) > 0) && matchBracket('<', '='))) {
+                // <=
+                length++;
+            } else if (ch == '<' && (((length++) > 0) && matchBracket('<', '<'))) {
+                // <<
+                length++;
+            }
+            return Tokens.OP_KEYWORD;
+        } else if (ch == '>') {
+            // > >= >>
+            ch = peekCharWithLength(1);
+            if (ch == '>' && (((length++) > 0) && matchBracket('>', '='))) {
+                // >=
+                length++;
+            } else if (ch == '>' && (((length++) > 0) && matchBracket('>', '>'))) {
+                // >>
+                length++;
+            }
+            return Tokens.OP_KEYWORD;
+        }
+
         return Tokens.UNKNOWN;
+    }
+
+    private boolean matchBracket(char left, char right) {
+        char currentLeft = peekCharWithLength(1);
+        char currentRight = peekCharWithLength(2);
+        return currentLeft == left && currentRight == right;
     }
 
     protected final void throwIfNeeded() {
@@ -443,18 +536,12 @@ public class Lexer {
 
     public enum Tokens {
         WHITESPACE, NEWLINE, UNKNOWN, EOF,
-
         LINE_COMMENT,
-
-        DIV, MULT, IDENTIFIER, INTEGER_LITERAL, DOT, MINUS, STRING, CHARACTER_LITERAL, LPAREN, RPAREN, LBRACE, RBRACE, LBRACK, RBRACK, COMMA, EQ, GT, LT, NOT, COMP, QUESTION, COLON, AND, OR, PLUS, XOR, MOD, SEMICOLON,
-
-        PROTO_KEYWORD,
-
-        CODE_KEYWORD, FUNCTION_KEYWORD,
-
-        OP_KEYWORD,
-        OP_ARG,
-
-        VALUE_KEYWORD,
+        IDENTIFIER,
+        INTEGER_LITERAL,
+        STRING,
+        DOT, OPERATOR, SEMICOLON,
+        PROTO_KEYWORD, CODE_KEYWORD, FUNCTION_KEYWORD,
+        OP_KEYWORD, OP_ARG, VALUE_KEYWORD,
     }
 }
