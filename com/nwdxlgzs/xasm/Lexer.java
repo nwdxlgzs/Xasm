@@ -31,7 +31,6 @@ public class Lexer {
             "lastlinedefined",
             "locvars",
             "upvaldesc",
-
     };
 
     private String[] functionKeywords = {
@@ -272,13 +271,17 @@ public class Lexer {
             return Tokens.DOT;
         }
 
+        //处理字符串
+        if (ch == '"') {
+            return scanString();
+        }
 
         return Tokens.UNKNOWN;
     }
 
     protected final void throwIfNeeded() {
         if (offset + length == bufferLen) {
-            throw new RuntimeException("Token too long");
+            throw new RuntimeException("太大的Token！考虑语法错误");
         }
     }
 
@@ -296,6 +299,34 @@ public class Lexer {
         return isNumber;
     }
 
+    protected Tokens scanString() {
+        throwIfNeeded();
+
+        char current = 0;
+        char last = 0;
+
+        //由于有转义符号的存在，不能直接判断是否为"\"
+        while (true) {
+            last = current;
+            current = peekCharWithLength();
+
+            length++;
+
+
+            if (current == '"' && last != '\\') {
+                break;
+            }
+
+            if (offset + length >= bufferLen) {
+                throw new RuntimeException("缺少正常的\"");
+            }
+
+        }
+
+
+        return Tokens.STRING;
+    }
+
     protected Tokens scanIdentifier() {
         throwIfNeeded();
 
@@ -304,10 +335,10 @@ public class Lexer {
         //呃不对，还有注释啥的。。
         char ch;
         while (!isWhitespace((ch = peekCharWithLength()))) {
-            length++;
             if (isSymbol(ch)) {
                 break;
             }
+            length++;
         }
 
         System.out.println(ch == '\r');
@@ -341,11 +372,9 @@ public class Lexer {
         }
 
         // rxx,uxx,kxx,pxx
-        if (tokenText.charAt(0) == 'r' || tokenText.charAt(0) == 'k' ||
-                tokenText.charAt(0) == 'u' || tokenText.charAt(0) == 'p') {
-            if (tokenText.length() < 2) {
-                return Tokens.IDENTIFIER;
-            }
+        if (tokenText.length() > 1 && (tokenText.charAt(0) == 'r' || tokenText.charAt(0) == 'k' ||
+                tokenText.charAt(0) == 'u' || tokenText.charAt(0) == 'p')) {
+
             String tokenTextSub = tokenText.substring(1, tokenText.length() - 1);
             boolean isNumber = isNumber(tokenTextSub);
             if (isNumber) {
