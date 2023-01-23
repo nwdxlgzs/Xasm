@@ -1,9 +1,5 @@
 package com.nwdxlgzs.xasm;
 
-import static com.nwdxlgzs.xasm.OPCode.*;
-import static com.nwdxlgzs.xasm.defines.*;
-import static com.nwdxlgzs.xasm.TValue.*;
-
 public class bindInst {
     public static void bind(Proto f) {
         int i;
