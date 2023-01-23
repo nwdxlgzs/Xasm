@@ -24,7 +24,23 @@ public class Lexer {
 
     private TokenState lastTokenState;
 
-    private String[] protoKeywords = {};
+    private String[] protoKeywords = {"sub-parse", "source", "is_vararg",
+            "maxstacksize",
+            "numparams",
+            "linedefined",
+            "lastlinedefined",
+            "locvars",
+            "upvaldesc",
+
+    };
+
+    private String[] functionKeywords = {
+            "function", "end"
+    };
+
+    private String[] codeKeywords = {
+            "code-start", "code-end"
+    };
 
     private String[] valueKeyWords = {
             "true", "false", "nil", "null"
@@ -89,6 +105,8 @@ public class Lexer {
             "nle",
             "func",
             "def",
+
+
     };
 
     public Lexer(CharSequence src) {
@@ -136,7 +154,7 @@ public class Lexer {
     }
 
     private char peekCharWithLength(int i) {
-        return source.charAt(i);
+        return source.charAt(offset + length + i);
     }
 
 
@@ -211,6 +229,7 @@ public class Lexer {
             return Tokens.SEMICOLON;
         }
 
+        //空格
         if (isWhitespace(ch)) {
             char chLocal;
             while (isWhitespace(chLocal = peekCharWithLength())) {
@@ -222,6 +241,7 @@ public class Lexer {
             return Tokens.WHITESPACE;
         }
 
+        //数字
         if (isDigit(ch)) {
             while (offset + length < bufferLen && isDigit(peekCharWithLength())) {
                 length++;
@@ -232,6 +252,24 @@ public class Lexer {
         // keyword
         if (isLetter(ch)) {
             return scanIdentifier();
+        }
+
+        //为点
+        if (ch == '.') {
+            char nextChar = peekCharWithLength(1);
+
+            if (isLetter(nextChar)) {
+                // 这里是移除点
+                index++;
+                length--;
+                Tokens result = scanIdentifier();
+                //还是得加回来的。
+                index--;
+                length++;
+                return result;
+            }
+
+            return Tokens.DOT;
         }
 
 
@@ -260,15 +298,35 @@ public class Lexer {
 
         String tokenText = getTokenText();
 
+        System.out.println(tokenText);
+
         for (String keyword : opCodeKeyWords) {
             if (tokenText.startsWith(keyword)) {
                 return Tokens.OP_KEYWORD;
             }
         }
 
-        //适配opxx
+        // opxx
         if (tokenText.startsWith("op")) {
             String tokenTextSub = tokenText.substring(2, tokenText.length() - 1);
+            int index = 0;
+            boolean isNumber = true;
+            while (index < tokenTextSub.length()) {
+                if (!isDigit(tokenTextSub.charAt(index))) {
+                    isNumber = false;
+                    break;
+                }
+                index++;
+            }
+            if (isNumber) {
+                return Tokens.OP_KEYWORD;
+            }
+        }
+
+
+        // goto_
+        if (tokenText.startsWith("goto_")) {
+            String tokenTextSub = tokenText.substring(5, tokenText.length() - 1);
             int index = 0;
             boolean isNumber = true;
             while (index < tokenTextSub.length()) {
@@ -289,12 +347,24 @@ public class Lexer {
             }
         }
 
+        for (String keyword : codeKeywords) {
+            if (tokenText.startsWith(keyword)) {
+                return Tokens.CODE_KEYWORD;
+            }
+        }
+
+        for (String keyword : functionKeywords) {
+            if (tokenText.startsWith(keyword)) {
+                return Tokens.FUNCTION_KEYWORD;
+            }
+        }
+
 
         return Tokens.IDENTIFIER;
     }
 
     protected void scanNewline() {
-        if (offset + length < bufferLen && peekCharWithLength(offset + length) == '\n') {
+        if (offset + length < bufferLen && peekChar(offset + length) == '\n') {
             length++;
         }
     }
@@ -325,47 +395,15 @@ public class Lexer {
     }
 
     public enum Tokens {
-        WHITESPACE,
-        NEWLINE,
-        UNKNOWN,
-        EOF,
+        WHITESPACE, NEWLINE, UNKNOWN, EOF,
 
         LINE_COMMENT,
 
-        DIV,
-        MULT,
-        IDENTIFIER,
-        INTEGER_LITERAL,
-        DOT,
-        MINUS,
-        STRING,
-        CHARACTER_LITERAL,
-        LPAREN,
-        RPAREN,
-        LBRACE,
-        RBRACE,
-        LBRACK,
-        RBRACK,
-        COMMA,
-        EQ,
-        GT,
-        LT,
-        NOT,
-        COMP,
-        QUESTION,
-        COLON,
-        AND,
-        OR,
-        PLUS,
-        XOR,
-        MOD,
-        FLOATING_POINT_LITERAL,
-        SEMICOLON,
+        DIV, MULT, IDENTIFIER, INTEGER_LITERAL, DOT, MINUS, STRING, CHARACTER_LITERAL, LPAREN, RPAREN, LBRACE, RBRACE, LBRACK, RBRACK, COMMA, EQ, GT, LT, NOT, COMP, QUESTION, COLON, AND, OR, PLUS, XOR, MOD, FLOATING_POINT_LITERAL, SEMICOLON,
 
         PROTO_KEYWORD,
 
-        CODE_KEYWORD,
-        FUNCTION_KEYWORD,
+        CODE_KEYWORD, FUNCTION_KEYWORD,
 
         OP_KEYWORD,
 
