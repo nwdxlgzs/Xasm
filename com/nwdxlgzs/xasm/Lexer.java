@@ -260,11 +260,10 @@ public class Lexer {
             if (isLetter(nextChar)) {
                 // 这里是移除点
                 index++;
-                length--;
+                /*length--;*/
                 Tokens result = scanIdentifier();
                 //还是得加回来的。
                 index--;
-                length++;
                 return result;
             }
 
@@ -312,7 +311,6 @@ public class Lexer {
 
             length++;
 
-
             if (current == '"' && last != '\\') {
                 break;
             }
@@ -340,8 +338,6 @@ public class Lexer {
             }
             length++;
         }
-
-        System.out.println(ch == '\r');
 
 
         String tokenText = getTokenText();
@@ -397,6 +393,12 @@ public class Lexer {
         for (String keyword : functionKeywords) {
             if (tokenText.startsWith(keyword)) {
                 return Tokens.FUNCTION_KEYWORD;
+            }
+        }
+
+        for (String keyword : protoKeywords) {
+            if (tokenText.startsWith(keyword)) {
+                return Tokens.PROTO_KEYWORD;
             }
         }
 
