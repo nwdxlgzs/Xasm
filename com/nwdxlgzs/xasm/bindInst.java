@@ -239,6 +239,9 @@ public class bindInst {
                         code[j - 1].isEndRealFake = true;
                         break;
                     }
+                    if(j == sizecode - 1){
+                        code[sizecode - 1].isEndRealFake = true;
+                    }
                 }
             }
         }
