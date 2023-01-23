@@ -221,5 +221,26 @@ public class bindInst {
                 }
             }
         }
+        for (i = 0; i < sizecode; i++) {
+            Instruction instruction = code[i];
+            if (instruction.isRealFake) {
+                int j;
+                for (j = i; j > 0; j--) {
+                    if (code[j].isCanJump2There) {
+                        code[j].isStartRealFake = true;
+                        break;
+                    }
+                    if (j == 1) {
+                        code[0].isStartRealFake = true;
+                    }
+                }
+                for (j = i + 1; j < sizecode; j++) {
+                    if (code[j].isCanJump2There) {
+                        code[j - 1].isEndRealFake = true;
+                        break;
+                    }
+                }
+            }
+        }
     }
 }
