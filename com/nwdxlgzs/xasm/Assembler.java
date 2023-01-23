@@ -219,6 +219,9 @@ public class Assembler {
             if (instruction.isCanJump2There) {
                 sb.append(".goto_").append(i).append("\n");
             }
+            if (instruction.isRealFake) {
+                sb.append("$ 这是下方指令绝对不可能被执行，否则会遇到完全未知的错误，请考虑附近指令是否为假块。\n");
+            }
             if (likeActCode) {
                 switch (opcode) {
                     case OP_ADD: {
