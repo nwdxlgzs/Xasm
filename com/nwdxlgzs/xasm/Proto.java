@@ -6,6 +6,7 @@ import java.io.Serializable;
 import static com.nwdxlgzs.xasm.defines.*;
 
 public class Proto implements Serializable {
+    public String XasmFuncName;//.function XX中的XX
     public byte numparams = 0;
     public byte is_vararg = 0;
     public byte maxstacksize = 0;
