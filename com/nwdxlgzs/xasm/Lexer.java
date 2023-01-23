@@ -1,15 +1,133 @@
 package com.nwdxlgzs.xasm;
 
-import static com.nwdxlgzs.xasm.OPCode.OpArgMask.OpArgK;
-import static com.nwdxlgzs.xasm.OPCode.OpArgMask.OpArgN;
-import static com.nwdxlgzs.xasm.OPCode.OpArgMask.OpArgR;
-import static com.nwdxlgzs.xasm.OPCode.OpArgMask.OpArgU;
-import static com.nwdxlgzs.xasm.OPCode.OpMode.iABC;
-import static com.nwdxlgzs.xasm.OPCode.OpMode.iABx;
-import static com.nwdxlgzs.xasm.OPCode.OpMode.iAsBx;
-import static com.nwdxlgzs.xasm.OPCode.OpMode.iAx;
-
 public class Lexer {
+
+    private CharSequence source;
+    protected int bufferLen;
+    private int line;
+    private int column;
+    private int index;
+    protected int offset;
+    protected int length;
+    private Tokens currentToken;
+
+
+    public Lexer(CharSequence src) {
+        if (src == null) {
+            throw new IllegalArgumentException("src can not be null");
+        }
+        this.source = src;
+        init();
+    }
+
+    private void init() {
+        line = 0;
+        column = 0;
+        length = 0;
+        index = 0;
+        currentToken = Tokens.WHITESPACE;
+        this.bufferLen = source.length();
+    }
+
+    public int getTokenLength() {
+        return length;
+    }
+
+    public String getTokenText() {
+        return source.subSequence(index, index + length).toString();
+    }
+
+    public int getLine() {
+        return line;
+    }
+
+    public int getColumn() {
+        return column;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public Tokens getToken() {
+        return currentToken;
+    }
+
+    private char peekCharWithLength(int i) {
+        return source.charAt(i);
+    }
+
+
+    public Tokens nextToken() {
+        return currentToken = nextTokenInternal();
+    }
+
+    private char peekNextChar() {
+        return source.charAt(offset);
+    }
+
+    private char peekCharWithLength() {
+        return source.charAt(offset + length);
+    }
+
+    private char peekChar(int offset) {
+        return source.charAt(offset);
+    }
+
+    private Tokens nextTokenInternal() {
+
+        index = index + length;
+        offset = offset + length;
+        if (offset >= bufferLen) {
+            return Tokens.EOF;
+        }
+
+        char ch = peekNextChar();
+        length = 1;
+
+
+        //分析简单char
+        if (ch == '\n') {
+            return Tokens.NEWLINE;
+        } else if (ch == '\r') {
+            scanNewline();
+            return Tokens.NEWLINE;
+        } else if (ch == '$') {
+            while (offset + length < bufferLen && peekCharWithLength() != '\n') {
+                length++;
+            }
+            return Tokens.LINE_COMMENT;
+        } else if (ch == ';') {
+            return Tokens.SEMICOLON;
+        }
+
+
+        return Tokens.UNKNOWN;
+    }
+
+    protected final void throwIfNeeded() {
+        if (offset + length == bufferLen) {
+            throw new RuntimeException("Token too long");
+        }
+    }
+
+    protected void scanNewline() {
+        if (offset + length < bufferLen && peekCharWithLength(offset + length) == '\n') {
+            length++;
+        }
+    }
+
+    protected static boolean isLetter(char c) {
+        return (c >= 'a' && c <= 'z') || c == '_' || (c >= 'A' && c <= 'Z');
+    }
+
+    protected static boolean isDigit(char c) {
+        return ((c >= '0' && c <= '9') /*|| (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f')*/);
+    }
+
+    protected static boolean isWhitespace(char c) {
+        return (c == '\t' || c == ' ' || c == '\f' || c == '\n' || c == '\r');
+    }
 
     public enum Tokens {
         WHITESPACE,
@@ -47,8 +165,10 @@ public class Lexer {
         XOR,
         MOD,
         FLOATING_POINT_LITERAL,
+        SEMICOLON,
 
-        FUNCTION_NAME,
+        FUNCTION_START,
+        FUNCTION_END,
         SUB_PARSE,
         SOURCE,
         IS_VARARG,
