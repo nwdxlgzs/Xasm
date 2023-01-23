@@ -350,7 +350,7 @@ public class Assembler {
                     sb.append("r").append(instruction.A()).append(" ");
                     i++;
                     Instruction instruction2 = f.code[i];
-                    sb.append(safeToVarString(f, instruction.Ax()));
+                    sb.append(safeToVarString(f, instruction2.Ax()));
                     if (needNote) {
                         sb.append(" $ 加载常量（").append(safeToVarString(f, instruction.Ax())).append("）到寄存器（r").append(instruction.A()).append("）");
                     }
@@ -1188,7 +1188,7 @@ public class Assembler {
                     break;
                 }
                 case OP_TFORLOOP: {//rA <sBx>或者rA goto_XX
-                    sb.append("r").append(instruction.A()).append("goto_").append(i + 1 + instruction.sBx());
+                    sb.append("r").append(instruction.A()).append(" ").append("goto_").append(i + 1 + instruction.sBx());
                     if (needNote) {
                         sb.append(" $ 循环指令，如果寄存器（r").append(instruction.A() + 1).append("）非nil，则跳转");
                     }
