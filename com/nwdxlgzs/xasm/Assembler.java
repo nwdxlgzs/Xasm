@@ -68,7 +68,6 @@ public class Assembler {
         StringBuilder sb = new StringBuilder();
         sb.append(".function main");
         sb.append(subPath == null ? "" : subPath);
-        sb.append(";");
         if (needNote) {
             if (f != proto) {
                 sb.append(" $ 当前根索引函数原型路径");
@@ -79,7 +78,6 @@ public class Assembler {
         sb.append("\n");
         sb.append(".sub-parse ");
         sb.append(needSubXasm);
-        sb.append(";");
         if (needNote) {
             if (needSubXasm) {
                 sb.append(" $ 本Xasm也会解析子函数");
@@ -94,7 +92,6 @@ public class Assembler {
         } else {
             sb.append(f.source.toWarpString());
         }
-        sb.append(";");
         if (needNote) {
             if (f.source == null || f.source.equals(NIL)) {
                 sb.append(" $ 当前函数原型没有指定源文件");
@@ -112,7 +109,7 @@ public class Assembler {
             }
         }
         sb.append("\n");
-        sb.append(".is_vararg ").append(f.is_vararg).append(";");
+        sb.append(".is_vararg ").append(f.is_vararg);
         if (needNote) {
             if (f.is_vararg == 0) {
                 sb.append(" $ 没使用变参");
@@ -125,17 +122,17 @@ public class Assembler {
             }
         }
         sb.append("\n");
-        sb.append(".maxstacksize ").append(f.maxstacksize).append(";");
+        sb.append(".maxstacksize ").append(f.maxstacksize);
         if (needNote) {
             sb.append(" $ 最大栈大小，合法值为0~250（255是理论的，但是虚拟机支持到250）");
         }
         sb.append("\n");
-        sb.append(".numparams ").append(f.numparams).append(";");
+        sb.append(".numparams ").append(f.numparams);
         if (needNote) {
             sb.append(" $ 固定的形参个数");
         }
         sb.append("\n");
-        sb.append(".linedefined ").append(f.linedefined).append(";");
+        sb.append(".linedefined ").append(f.linedefined);
         if (needNote) {
             if (f != proto) {
                 sb.append(" $ 起始定义的行号");
@@ -144,7 +141,7 @@ public class Assembler {
             }
         }
         sb.append("\n");
-        sb.append(".lastlinedefined ").append(f.lastlinedefined).append(";");
+        sb.append(".lastlinedefined ").append(f.lastlinedefined);
         if (needNote) {
             if (f != proto) {
                 sb.append(" $ 结束定义的行号");
@@ -162,7 +159,7 @@ public class Assembler {
             LocVar lv = f.locvars[i];
             sb.append(".locvars ")
                     .append(lv.varname.toVarString()).append(" ")
-                    .append(lv.startpc).append(" -> ").append(lv.endpc).append(";");
+                    .append(lv.startpc).append(" -> ").append(lv.endpc);
             sb.append("\n");
         }
         sb.append("\n");//成组出现，多加入一次换行
@@ -174,7 +171,7 @@ public class Assembler {
             Upvaldesc uv = f.upvalues[i];
             sb.append(".upvaldesc ")
                     .append(uv.name.toVarString()).append(" ")
-                    .append(uv.idx).append(" ").append(uv.instack).append(";");
+                    .append(uv.idx).append(" ").append(uv.instack);
             sb.append("\n");
         }
         sb.append("\n");//成组出现，多加入一次换行
