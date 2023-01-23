@@ -143,9 +143,6 @@ public class TValue implements Serializable {
             byte[] data = (byte[]) value_;
             StringContentLevel level = TStringCheck(data);
             switch (level) {
-                            byte[] data = (byte[]) value_;
-            StringContentLevel level = TStringCheck(data);
-            switch (level) {
                 case STR_CONTENT_BUFFER: {
                     StringBuilder sb = new StringBuilder();
                     sb.append("\"");
