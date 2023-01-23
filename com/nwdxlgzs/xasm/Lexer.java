@@ -20,7 +20,9 @@ public class Lexer {
     private int index;
     protected int offset;
     protected int length;
-    private Tokens currentToken;
+    private TokenState currentTokenState;
+
+    private TokenState lastTokenState;
 
     private String[] protoKeywords = {};
 
@@ -81,28 +83,12 @@ public class Lexer {
             "tbc",
             "newarray",
             "tforeach",
-            //下头是不存在的op
-            "op50",
-            "op51",
-            "op52",
-            "op53",
-            "op54",
-            "op55",
-            "op56",
-            "op57",
-            "op58",
-            "op59",
-            "op60",
-            "op61",
-            "op62",
-            "op63",
 
             "neq",
             "nlt",
             "nle",
             "func",
-            "def"
-
+            "def",
     };
 
     public Lexer(CharSequence src) {
@@ -118,7 +104,7 @@ public class Lexer {
         column = 0;
         length = 0;
         index = 0;
-        currentToken = Tokens.WHITESPACE;
+        currentTokenState = new TokenState(Tokens.WHITESPACE, length, offset);
         this.bufferLen = source.length();
     }
 
@@ -146,7 +132,7 @@ public class Lexer {
     }
 
     public Tokens getToken() {
-        return currentToken;
+        return currentTokenState.token;
     }
 
     private char peekCharWithLength(int i) {
@@ -155,7 +141,8 @@ public class Lexer {
 
 
     public Tokens nextToken() {
-        return currentToken = nextTokenInternal();
+        lastTokenState = currentTokenState;
+        return (currentTokenState = calcLineAndColumn(nextTokenInternal())).token;
     }
 
     private char peekNextChar() {
@@ -180,6 +167,23 @@ public class Lexer {
         return source.charAt(offset);
     }
 
+    private TokenState wrapState(Tokens token) {
+        TokenState state = new TokenState(token, length, offset);
+        return state;
+    }
+
+    private TokenState calcLineAndColumn(Tokens result) {
+
+        column += lastTokenState.length;
+
+        if (lastTokenState.token == Tokens.NEWLINE) {
+            line++;
+            column = 0;
+        }
+
+        return wrapState(result);
+    }
+
     private Tokens nextTokenInternal() {
 
         index = index + length;
@@ -191,11 +195,11 @@ public class Lexer {
         char ch = peekNextChar();
         length = 1;
 
-
         //分析简单char
         if (ch == '\n') {
             return Tokens.NEWLINE;
         } else if (ch == '\r') {
+            line++;
             scanNewline();
             return Tokens.NEWLINE;
         } else if (ch == '$') {
@@ -216,6 +220,13 @@ public class Lexer {
                 length++;
             }
             return Tokens.WHITESPACE;
+        }
+
+        if (isDigit(ch)) {
+            while (offset + length < bufferLen && isDigit(peekCharWithLength())) {
+                length++;
+            }
+            return Tokens.INTEGER_LITERAL;
         }
 
         // keyword
@@ -255,6 +266,23 @@ public class Lexer {
             }
         }
 
+        //适配opxx
+        if (tokenText.startsWith("op")) {
+            String tokenTextSub = tokenText.substring(2, tokenText.length() - 1);
+            int index = 0;
+            boolean isNumber = true;
+            while (index < tokenTextSub.length()) {
+                if (!isDigit(tokenTextSub.charAt(index))) {
+                    isNumber = false;
+                    break;
+                }
+                index++;
+            }
+            if (isNumber) {
+                return Tokens.OP_KEYWORD;
+            }
+        }
+
         for (String keyword : valueKeyWords) {
             if (tokenText.startsWith(keyword)) {
                 return Tokens.VALUE_KEYWORD;
@@ -276,11 +304,24 @@ public class Lexer {
     }
 
     protected static boolean isDigit(char c) {
-        return ((c >= '0' && c <= '9') /*|| (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f')*/);
+        return ((c >= '0' && c <= '9'));
     }
 
     protected static boolean isWhitespace(char c) {
         return (c == '\t' || c == ' ' || c == '\f' || c == '\n' || c == '\r');
+    }
+
+
+    protected class TokenState {
+        Tokens token;
+        int length;
+        int offset;
+
+        public TokenState(Tokens token, int length, int offset) {
+            this.token = token;
+            this.length = length;
+            this.offset = offset;
+        }
     }
 
     public enum Tokens {
