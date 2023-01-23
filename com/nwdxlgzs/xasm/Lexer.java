@@ -238,9 +238,12 @@ public class Lexer {
 
         //对于标识符来说，只要不遇到空格符就是合法的
         //其他校检我暂时懒得做了
-
-
-        while (!isWhitespace(peekCharWithLength())) {
+        //呃不对，还有注释啥的。。
+        char ch;
+        while (!isWhitespace((ch = peekCharWithLength()))) {
+            if (ch == '$') {
+                break;
+            }
             length++;
         }
 
