@@ -219,11 +219,11 @@ public class Assembler {
             if (instruction.isCanJump2There) {
                 sb.append(".goto_").append(i).append("\n");
             }
-            if (instruction.isRealFake) {
-                sb.append("$ 这是下方指令绝对不可能被执行，否则会遇到完全未知的错误，请考虑附近指令是否为假块。\n");
-            }
             if (instruction.isStartRealFake) {
                 sb.append("$ =================开始假块=================\n");
+            }
+            if (instruction.isRealFake) {
+                sb.append("$ 这是下方指令绝对不可能被执行，否则会遇到完全未知的错误，请考虑附近指令是否为假块。\n");
             }
             if (likeActCode) {
                 switch (opcode) {
@@ -1274,12 +1274,14 @@ public class Assembler {
         sb.append(".end");
         sb.append("\n");
         sb.append("\n");
-        int sizep = f.sizep();
-        for (i = 0; i < sizep; i++) {
-            if (subPath == null) {
-                sb.append(getXasm(f.p[i], String.valueOf(i), needNote, likeActCode, needSubXasm));
-            } else {
-                sb.append(getXasm(f.p[i], subPath + "/" + String.valueOf(i), needNote, likeActCode, needSubXasm));
+        if(needSubXasm) {
+            int sizep = f.sizep();
+            for (i = 0; i < sizep; i++) {
+                if (subPath == null) {
+                    sb.append(getXasm(f.p[i], String.valueOf(i), needNote, likeActCode, needSubXasm));
+                } else {
+                    sb.append(getXasm(f.p[i], subPath + "/" + String.valueOf(i), needNote, likeActCode, needSubXasm));
+                }
             }
         }
         return sb.toString();
