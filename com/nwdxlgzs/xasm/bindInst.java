@@ -224,26 +224,98 @@ public class bindInst {
         for (i = 0; i < sizecode; i++) {
             Instruction instruction = code[i];
             if (instruction.isRealFake) {
+                //上一个isCanJump2There(i:inst goto _inst)到下一个isCanJump2There(i-1:_inst goto inst)之间的指令都是假的
                 int j;
                 for (j = i; j > 0; j--) {
-                    if (code[j].isCanJump2There) {
+                    if (j == 1) {//第一个指令一定是JMP了
                         code[j].isStartRealFake = true;
                         break;
                     }
-                    if (j == 1) {
-                        code[0].isStartRealFake = true;
+                    if (code[j].isCanJump2There) {
+                        boolean dobreak = false;
+                        Instruction instruction2 = code[j];
+                        switch (instruction2.getOpCode()) {
+                            case OP_LOADKX:
+                            case OP_EQ:
+                            case OP_LT:
+                            case OP_LE:
+                            case OP_TEST:
+                            case OP_TESTSET: {//忽略这个情况
+                                break;
+                            }
+                            default: {
+                                code[j].isStartRealFake = true;
+                                dobreak = true;
+                                break;
+                            }
+                        }
+                        if (dobreak) {
+                            break;
+                        }
                     }
                 }
                 for (j = i + 1; j < sizecode; j++) {
-                    if (code[j].isCanJump2There) {
-                        code[j - 1].isEndRealFake = true;
+                    if (j == sizecode - 1) {
+                        code[j].isEndRealFake = true;
                         break;
                     }
-                    if(j == sizecode - 1){
-                        code[sizecode - 1].isEndRealFake = true;
+                    if (code[j].isCanJump2There) {
+                        boolean dobreak = false;
+                        Instruction instruction2 = code[j - 1];
+                        switch (instruction2.getOpCode()) {
+                            case OP_LOADKX:
+                            case OP_EQ:
+                            case OP_LT:
+                            case OP_LE:
+                            case OP_TEST:
+                            case OP_TESTSET: {//忽略这个情况
+                                break;
+                            }
+                            default: {
+                                code[j - 1].isEndRealFake = true;
+                                dobreak = true;
+                                break;
+                            }
+                        }
+                        if (dobreak) {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        for (i = 0; i < sizecode; i++) {//合并Start和End
+            Instruction instruction = code[i];
+            //End和Start前后脚或者同一个的就合并
+            if (instruction.isEndRealFake && instruction.isStartRealFake) {
+                instruction.isEndRealFake = false;
+                instruction.isStartRealFake = false;
+            }
+            if (instruction.isEndRealFake) {
+                if (i > 0) {
+                    Instruction instruction2 = code[i - 1];
+                    if (instruction2.isStartRealFake) {
+                        instruction.isEndRealFake = false;
+                        instruction2.isStartRealFake = false;
+                    }
+                }
+            }
+        }
+        for (i = 0; i < sizecode; i++) {//剔除重复的Start
+            Instruction instruction = code[i];
+            if (instruction.isStartRealFake) {
+                int j;
+                for (j = i + 1; j < sizecode; j++) {
+                    Instruction instruction2 = code[j];
+                    if (instruction2.isEndRealFake) {
+                        break;
+                    }
+                    if (instruction2.isStartRealFake) {
+                        instruction2.isStartRealFake = false;
                     }
                 }
             }
         }
     }
+
 }
