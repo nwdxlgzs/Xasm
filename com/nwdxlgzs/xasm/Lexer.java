@@ -2,7 +2,7 @@ package com.nwdxlgzs.xasm;
 
 public class Lexer {
 
-    private final CharSequence source;
+    private CharSequence source;
     protected int bufferLen;
     private int line;
     private int column;
@@ -13,7 +13,7 @@ public class Lexer {
 
     private TokenState lastTokenState;
 
-    private final String[] protoKeywords = {"sub-parse", "source", "is_vararg",
+    private String[] protoKeywords = {"sub-parse", "source", "is_vararg",
             "maxstacksize",
             "numparams",
             "linedefined",
@@ -22,19 +22,19 @@ public class Lexer {
             "upvaldesc",
     };
 
-    private final String[] functionKeywords = {
+    private String[] functionKeywords = {
             "function", "end"
     };
 
-    private final String[] codeKeywords = {
+    private String[] codeKeywords = {
             "code-start", "code-end", "line"
     };
 
-    private final String[] valueKeyWords = {
+    private String[] valueKeyWords = {
             "true", "false", "nil", "null"
     };
 
-    private final String[] opCodeKeyWords = {
+    private String[] opCodeKeyWords = {
             "unknown",
             "move",
             "loadk",
@@ -112,6 +112,10 @@ public class Lexer {
         this.bufferLen = source.length();
     }
 
+    public void reset() {
+        init();
+    }
+
     public int getTokenLength() {
         return length;
     }
@@ -155,6 +159,16 @@ public class Lexer {
 
     private char peekCharWithLength() {
         return source.charAt(offset + length);
+    }
+
+    private char nextChar() {
+        offset++;
+        return peekNextChar();
+    }
+
+    private char nextCharWithLength() {
+        length++;
+        return peekCharWithLength();
     }
 
     private char peekChar(int offset) {
@@ -257,7 +271,7 @@ public class Lexer {
         //有的opcode使用多个符号，需要消费长度
         if (ch == '~') {
             // ~ ~= ~()
-            ch = peekCharWithLength();
+            ch = peekCharWithLength(1);
             if (ch == '=') {
                 // ~=
                 length++;
@@ -306,7 +320,7 @@ public class Lexer {
             return Tokens.OP_KEYWORD;
         } else if (ch == '-') {
             // - -()
-            ch = peekCharWithLength();
+            ch = peekCharWithLength(1);
             if (ch == '(' && (((length++) > 0) && matchBracket('(', ')'))) {
                 // -()
                 length++;
@@ -362,8 +376,6 @@ public class Lexer {
     }
 
     private boolean matchBracket(char left, char right) {
-        // length - 1
-        // 0 - 1 = -1, 1 - 1 = 0
         char currentLeft = peekCharWithLength(-1);
         char currentRight = peekCharWithLength(0);
         return currentLeft == left && currentRight == right;
@@ -392,7 +404,7 @@ public class Lexer {
     protected Tokens scanString() {
         throwIfNeeded();
 
-        char current;
+        char current = 0;
 
         //由于有转义符号的存在，不能直接判断是否为"\"
         while (true) {
@@ -526,7 +538,7 @@ public class Lexer {
     }
 
 
-    protected static class TokenState {
+    protected class TokenState {
         Tokens token;
         int length;
         int offset;
