@@ -147,10 +147,6 @@ public class Lexer {
         return source.charAt(offset + length + i);
     }
 
-    public void gotoNextToken(Tokens tk) {
-        gotoNextToken(tk, false);
-    }
-
     public void gotoNextToken(Tokens tk, boolean justSkipUselessToken) {
         while (true) {
             Tokens token = nextToken();
@@ -162,6 +158,55 @@ public class Lexer {
                     continue;
                 } else {
                     throw new RuntimeException("syntax error: unexpected token " + token);
+                }
+            }
+        }
+    }
+
+    public Tokens skipUselessToken() {
+        while (true) {
+            Tokens token = nextToken();
+            if (token == Lexer.Tokens.EOF) {
+                return token;
+            }
+            if (token == Lexer.Tokens.WHITESPACE || token == Lexer.Tokens.NEWLINE || token == Lexer.Tokens.LINE_COMMENT) {
+                continue;
+            } else {
+                return token;
+            }
+        }
+    }
+
+    public boolean testNextToken(Tokens tk, boolean backIfNotMatch, boolean skipUselessToken) {
+        int oldIndex = index;
+        int oldOffset = offset;
+        int oldLength = length;
+        int oldLine = line;
+        int oldColumn = column;
+        TokenState oldCurrentTokenState = currentTokenState;
+        TokenState oldLastTokenState = lastTokenState;
+        while (true) {
+            Tokens token = nextToken();
+            if (token == tk) {
+                return true;
+            }
+            if (token == Lexer.Tokens.EOF) {
+                return false;
+            }
+            if (skipUselessToken) {
+                if (token == Lexer.Tokens.WHITESPACE || token == Lexer.Tokens.NEWLINE || token == Lexer.Tokens.LINE_COMMENT) {
+                    continue;
+                } else {
+                    if (backIfNotMatch) {
+                        index = oldIndex;
+                        offset = oldOffset;
+                        length = oldLength;
+                        line = oldLine;
+                        column = oldColumn;
+                        currentTokenState = oldCurrentTokenState;
+                        lastTokenState = oldLastTokenState;
+                    }
+                    return false;
                 }
             }
         }
