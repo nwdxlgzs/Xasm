@@ -148,10 +148,19 @@ public class Lexer {
     }
 
     public void gotoNextToken(Tokens tk) {
+        gotoNextToken(tk, false);
+    }
+
+    public void gotoNextToken(Tokens tk, boolean justSkipUselessToken) {
         while (true) {
             Tokens token = nextToken();
             if (token == Lexer.Tokens.EOF || token == tk) {
                 return;
+            }
+            if (justSkipUselessToken) {
+                if (token == Lexer.Tokens.WHITESPACE || token == Lexer.Tokens.NEWLINE || token == Lexer.Tokens.LINE_COMMENT) {
+                    continue;
+                }
             }
         }
     }
