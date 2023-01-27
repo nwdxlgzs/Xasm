@@ -89,7 +89,8 @@ public class Proto implements Serializable {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Proto{" + "\n" + "numparams=").append(numparams).append("\n")
+        sb.append("Proto{ ").append(XasmFuncName == null ? "" : XasmFuncName).append("\n")
+                .append(" numparams=").append(numparams).append("\n")
                 .append(", is_vararg=").append(is_vararg).append("\n")
                 .append(", maxstacksize=").append(maxstacksize).append("\n")
                 .append(", sizeupvalues=").append(sizeupvalues()).append("\n")
