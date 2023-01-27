@@ -450,6 +450,18 @@ public class Lexer {
 
 
         String tokenText = getTokenText();
+        
+        for (String keyword : functionKeywords) {
+            if (tokenText.startsWith(keyword)) {
+                return Tokens.FUNCTION_KEYWORD;
+            }
+        }
+
+        for (String keyword : protoKeywords) {
+            if (tokenText.startsWith(keyword)) {
+                return Tokens.PROTO_KEYWORD;
+            }
+        }
 
         for (String keyword : opCodeKeyWords) {
             if (tokenText.startsWith(keyword)) {
@@ -498,19 +510,6 @@ public class Lexer {
                 return Tokens.CODE_KEYWORD;
             }
         }
-
-        for (String keyword : functionKeywords) {
-            if (tokenText.startsWith(keyword)) {
-                return Tokens.FUNCTION_KEYWORD;
-            }
-        }
-
-        for (String keyword : protoKeywords) {
-            if (tokenText.startsWith(keyword)) {
-                return Tokens.PROTO_KEYWORD;
-            }
-        }
-
 
         return Tokens.IDENTIFIER;
     }
