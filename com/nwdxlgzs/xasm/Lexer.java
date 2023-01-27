@@ -160,6 +160,8 @@ public class Lexer {
             if (justSkipUselessToken) {
                 if (token == Lexer.Tokens.WHITESPACE || token == Lexer.Tokens.NEWLINE || token == Lexer.Tokens.LINE_COMMENT) {
                     continue;
+                } else {
+                    throw new RuntimeException("syntax error: unexpected token " + token);
                 }
             }
         }
