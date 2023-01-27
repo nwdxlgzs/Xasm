@@ -147,6 +147,14 @@ public class Lexer {
         return source.charAt(offset + length + i);
     }
 
+    public void gotoNextToken(Tokens tk) {
+        while (true) {
+            Tokens token = nextToken();
+            if (token == Lexer.Tokens.EOF || token == tk) {
+                return;
+            }
+        }
+    }
 
     public Tokens nextToken() {
         lastTokenState = currentTokenState;
@@ -450,7 +458,7 @@ public class Lexer {
 
 
         String tokenText = getTokenText();
-        
+
         for (String keyword : functionKeywords) {
             if (tokenText.startsWith(keyword)) {
                 return Tokens.FUNCTION_KEYWORD;
