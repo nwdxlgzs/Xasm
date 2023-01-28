@@ -13,7 +13,10 @@ public class Lexer {
 
     private TokenState lastTokenState;
 
-    private String[] protoKeywords = {"sub-parse", "source", "is_vararg",
+    private String[] protoKeywords = {
+            "sub-parse",
+            "source",
+            "is_vararg",
             "maxstacksize",
             "numparams",
             "linedefined",
@@ -97,7 +100,7 @@ public class Lexer {
 
     public Lexer(CharSequence src) {
         if (src == null) {
-            throw new IllegalArgumentException("src can not be null");
+            throw new IllegalArgumentException("输入不能为空");
         }
         this.source = src;
         init();
@@ -157,7 +160,7 @@ public class Lexer {
                 if (token == Lexer.Tokens.WHITESPACE || token == Lexer.Tokens.NEWLINE || token == Lexer.Tokens.LINE_COMMENT) {
                     continue;
                 } else {
-                    throw new RuntimeException("syntax error: unexpected token " + token);
+                    throw new RuntimeException("语法错误:未期待的令牌" + token);
                 }
             }
         }
@@ -169,7 +172,8 @@ public class Lexer {
             if (token == Lexer.Tokens.EOF) {
                 return token;
             }
-            if (token == Lexer.Tokens.WHITESPACE || token == Lexer.Tokens.NEWLINE || token == Lexer.Tokens.LINE_COMMENT) {
+            if (token == Tokens.WHITESPACE || token == Tokens.NEWLINE || token == Tokens.LINE_COMMENT ||
+                    token == Tokens.OPERATOR || token == Tokens.SEMICOLON) {
                 continue;
             } else {
                 return token;
@@ -194,7 +198,8 @@ public class Lexer {
                 return false;
             }
             if (skipUselessToken) {
-                if (token == Lexer.Tokens.WHITESPACE || token == Lexer.Tokens.NEWLINE || token == Lexer.Tokens.LINE_COMMENT) {
+                if (token == Tokens.WHITESPACE || token == Tokens.NEWLINE || token == Tokens.LINE_COMMENT ||
+                        token == Tokens.OPERATOR || token == Tokens.SEMICOLON) {
                     continue;
                 } else {
                     if (backIfNotMatch) {
