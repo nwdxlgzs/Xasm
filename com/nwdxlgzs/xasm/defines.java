@@ -432,4 +432,103 @@ public class defines {
         }
         return StringContentLevel.STR_CONTENT_STRING;
     }
+
+    public static int hexvalue(int c) {
+        return c <= '9' ? c - '0' : c <= 'F' ? c + 10 - 'A' : c + 10 - 'a';
+    }
+
+    public static boolean isxdigit(int c) {
+        return (c >= '0' && c <= '9')
+                || (c >= 'a' && c <= 'f')
+                || (c >= 'A' && c <= 'F');
+    }
+
+    public static TValue readAsTString(String str) {
+        byte[] strbuf = str.getBytes();
+        byte[] savebuff = new byte[strbuf.length];
+        int save = 0;
+        int pos = 0;
+        pos++; /* skip the first `"' */
+        int current = strbuf[pos++];
+        boolean doBreak = false;
+        while (current != '"' && pos < strbuf.length) {
+            if (doBreak) {
+                break;
+            }
+            switch (current) {
+                case '\n':
+                case '\r':
+                    throw new IllegalArgumentException("未完善的字符串");
+                case '\\': {
+                    int c = 0;
+                    current = strbuf[pos++];//skip the first `\'
+                    switch (current) {
+                        case '\\':
+                            c = '\\';
+                            break;
+                        case 't':
+                            c = '\t';
+                            break;
+                        case 'f':
+                            c = '\f';
+                            break;
+                        case 'n':
+                            c = '\n';
+                            break;
+                        case 'r':
+                            c = '\r';
+                            break;
+                        case '0':
+                            c = '\0';
+                            break;
+                        case '"':
+                            c = '"';
+                            break;
+                        case 'b':
+                            c = '\b';
+                            break;
+                        case 'x': {
+                            if (pos < strbuf.length) {
+                                current = strbuf[pos++];
+                            } else {
+                                doBreak = true;
+                                break;
+                            }
+                            int c1 = current;
+                            if (pos < strbuf.length) {
+                                current = strbuf[pos++];
+                            } else {
+                                doBreak = true;
+                                break;
+                            }
+                            int c2 = current;
+                            if (!isxdigit(c1) || !isxdigit(c2))
+                                throw new IllegalArgumentException("期待HEX编码符号，但是得到：0x" + ((char) c1) + ((char) c2));
+                            c = (hexvalue(c1) << 4) + hexvalue(c2);
+                            break;
+                        }
+                        default: {
+                            throw new IllegalArgumentException("转义符错误:只支持的转义符：\\\\,\\t,\\f,\\n,\\r,\\0,\\\",\\b,\\x，当前得到" + (char) current);
+                        }
+                    }
+                    savebuff[save++] = (byte) c;
+                    if (pos < strbuf.length) {
+                        current = strbuf[pos++];
+                    } else {
+                        doBreak = true;
+                    }
+                    continue;
+                }
+                default: {
+                    savebuff[save++] = (byte) current;
+                    current = strbuf[pos++];
+                    break;
+                }
+            }
+        }
+        if (current != '"') {
+            throw new IllegalArgumentException("字符串未完结");
+        }
+        return TValue.createString(savebuff, save);
+    }
 }
