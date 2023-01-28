@@ -478,7 +478,7 @@ public class Lexer {
 
             if (current == '\\') {
                 current = peekCharWithLength();
-                if (current == '\\' || current == 't' || current == 'f' || current == 'n' || current == 'r' || current == '0' || current == '\"' || current == 'b' || current == '\'') {
+                if (current == '\\' || current == 't' || current == 'f' || current == 'n' || current == 'r' || current == '0' || current == '\"' || current == 'b') {
                     length++;
                 }
             }
