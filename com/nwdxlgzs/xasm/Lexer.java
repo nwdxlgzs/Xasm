@@ -10,8 +10,39 @@ public class Lexer {
     protected int offset;
     protected int length;
     private TokenState currentTokenState;
-
     private TokenState lastTokenState;
+
+    public class LexerSnapshot {
+        private int oldIndex;
+        private int oldOffset;
+        private int oldLength;
+        private int oldLine;
+        private int oldColumn;
+        private TokenState oldCurrentTokenState;
+        private TokenState oldLastTokenState;
+
+        public LexerSnapshot() {
+            oldIndex = index;
+            oldOffset = offset;
+            oldLength = length;
+            oldLine = line;
+            oldColumn = column;
+            oldCurrentTokenState = currentTokenState;
+            oldLastTokenState = lastTokenState;
+        }
+
+        public void goBack(Lexer lexer) {
+            index = oldIndex;
+            offset = oldOffset;
+            length = oldLength;
+            line = oldLine;
+            column = oldColumn;
+            currentTokenState = oldCurrentTokenState;
+            lastTokenState = oldLastTokenState;
+        }
+
+    }
+
 
     private String[] protoKeywords = {
             "sub-parse",
@@ -183,13 +214,7 @@ public class Lexer {
     }
 
     public boolean testNextToken(Tokens tk, boolean backIfNotMatch, boolean skipUselessToken) {
-        int oldIndex = index;
-        int oldOffset = offset;
-        int oldLength = length;
-        int oldLine = line;
-        int oldColumn = column;
-        TokenState oldCurrentTokenState = currentTokenState;
-        TokenState oldLastTokenState = lastTokenState;
+        LexerSnapshot snapshot = new LexerSnapshot();
         while (true) {
             Tokens token = nextToken();
             if (token == tk) {
@@ -204,13 +229,7 @@ public class Lexer {
                     continue;
                 } else {
                     if (backIfNotMatch) {
-                        index = oldIndex;
-                        offset = oldOffset;
-                        length = oldLength;
-                        line = oldLine;
-                        column = oldColumn;
-                        currentTokenState = oldCurrentTokenState;
-                        lastTokenState = oldLastTokenState;
+                        snapshot.goBack(this);
                     }
                     return false;
                 }
