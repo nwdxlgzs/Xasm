@@ -12,38 +12,6 @@ public class Lexer {
     private TokenState currentTokenState;
     private TokenState lastTokenState;
 
-    public class LexerSnapshot {
-        private int oldIndex;
-        private int oldOffset;
-        private int oldLength;
-        private int oldLine;
-        private int oldColumn;
-        private TokenState oldCurrentTokenState;
-        private TokenState oldLastTokenState;
-
-        public LexerSnapshot() {
-            oldIndex = index;
-            oldOffset = offset;
-            oldLength = length;
-            oldLine = line;
-            oldColumn = column;
-            oldCurrentTokenState = currentTokenState;
-            oldLastTokenState = lastTokenState;
-        }
-
-        public void restore() {
-            index = oldIndex;
-            offset = oldOffset;
-            length = oldLength;
-            line = oldLine;
-            column = oldColumn;
-            currentTokenState = oldCurrentTokenState;
-            lastTokenState = oldLastTokenState;
-        }
-
-    }
-
-
     private String[] protoKeywords = {
             "sub-parse",
             "source",
@@ -148,6 +116,10 @@ public class Lexer {
 
     public void reset() {
         init();
+    }
+
+    public LexerSnapshot snapshot() {
+        return new LexerSnapshot();
     }
 
     public int getTokenLength() {
@@ -626,6 +598,37 @@ public class Lexer {
             this.length = length;
             this.offset = offset;
         }
+    }
+
+    public class LexerSnapshot {
+        private int oldIndex;
+        private int oldOffset;
+        private int oldLength;
+        private int oldLine;
+        private int oldColumn;
+        private TokenState oldCurrentTokenState;
+        private TokenState oldLastTokenState;
+
+        public LexerSnapshot() {
+            oldIndex = index;
+            oldOffset = offset;
+            oldLength = length;
+            oldLine = line;
+            oldColumn = column;
+            oldCurrentTokenState = currentTokenState;
+            oldLastTokenState = lastTokenState;
+        }
+
+        public void restore() {
+            index = oldIndex;
+            offset = oldOffset;
+            length = oldLength;
+            line = oldLine;
+            column = oldColumn;
+            currentTokenState = oldCurrentTokenState;
+            lastTokenState = oldLastTokenState;
+        }
+
     }
 
     public enum Tokens {
