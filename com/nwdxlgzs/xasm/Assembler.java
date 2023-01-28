@@ -92,7 +92,7 @@ public class Assembler {
             }
         }
         sb.append("\n");
-        sb.append(".sub-parse ");
+        sb.append(".sub-parse ");//这个是给人看的，解析工具其实可以不认的，只是告诉人这个函数会解析子函数
         sb.append(needSubXasm);
         if (needNote) {
             if (needSubXasm) {
@@ -166,8 +166,9 @@ public class Assembler {
             }
         }
         sb.append("\n");
-        sb.append("\n");//成组出现，多加入一次换行
         int sizelocvars = f.sizelocvars();
+        if (sizelocvars > 0)
+            sb.append("\n");//成组出现，多加入一次换行
         for (i = 0; i < sizelocvars; i++) {
             if (needNote && i == 0) {
                 sb.append("$ 局部变量名 起始位置(指令) -> 回收位置(指令)").append("\n");
@@ -1274,7 +1275,7 @@ public class Assembler {
         sb.append(".end");
         sb.append("\n");
         sb.append("\n");
-        if(needSubXasm) {
+        if (needSubXasm) {
             int sizep = f.sizep();
             for (i = 0; i < sizep; i++) {
                 if (subPath == null) {
