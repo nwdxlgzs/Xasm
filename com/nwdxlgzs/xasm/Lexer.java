@@ -147,7 +147,7 @@ public class Lexer {
     }
 
     private char peekCharWithLength(int i) {
-        return source.charAt(offset + length + i);
+        return source.charAt(offset + length + i - 1);
     }
 
     public void gotoNextToken(Tokens tk, boolean justSkipUselessToken) {
@@ -331,7 +331,7 @@ public class Lexer {
         //有的opcode使用多个符号，需要消费长度
         if (ch == '~') {
             // ~ ~= ~()
-            ch = peekCharWithLength();
+            ch = peekCharWithLength(1);
             if (ch == '=') {
                 // ~=
                 length++;
@@ -380,7 +380,7 @@ public class Lexer {
             return Tokens.OP_KEYWORD;
         } else if (ch == '-') {
             // - -()
-            ch = peekCharWithLength();
+            ch = peekCharWithLength(1);
             if (ch == '(' && (((length++) > 0) && matchBracket('(', ')'))) {
                 // -()
                 length++;
@@ -436,8 +436,8 @@ public class Lexer {
     }
 
     private boolean matchBracket(char left, char right) {
-        char currentLeft = peekCharWithLength(-1);
-        char currentRight = peekCharWithLength();
+        char currentLeft = peekCharWithLength(0);
+        char currentRight = peekCharWithLength(1);
         return currentLeft == left && currentRight == right;
     }
 
@@ -617,6 +617,6 @@ public class Lexer {
         STRING,
         DOT, OPERATOR, SEMICOLON,
         PROTO_KEYWORD, CODE_KEYWORD, FUNCTION_KEYWORD,
-        OP_KEYWORD, OP_ARG, VALUE_KEYWORD,
+        OP_KEYWORD, OP_ARG, VALUE_KEYWORD
     }
 }
