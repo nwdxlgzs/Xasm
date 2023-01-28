@@ -157,7 +157,8 @@ public class Lexer {
                 return;
             }
             if (justSkipUselessToken) {
-                if (token == Lexer.Tokens.WHITESPACE || token == Lexer.Tokens.NEWLINE || token == Lexer.Tokens.LINE_COMMENT) {
+                if (token == Tokens.WHITESPACE || token == Tokens.NEWLINE || token == Tokens.LINE_COMMENT ||
+                        token == Tokens.OPERATOR || token == Tokens.SEMICOLON) {
                     continue;
                 } else {
                     throw new RuntimeException("语法错误:未期待的令牌" + token);
