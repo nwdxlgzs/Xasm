@@ -31,7 +31,7 @@ public class Lexer {
             oldLastTokenState = lastTokenState;
         }
 
-        public void goBack(Lexer lexer) {
+        public void restore() {
             index = oldIndex;
             offset = oldOffset;
             length = oldLength;
@@ -229,7 +229,7 @@ public class Lexer {
                     continue;
                 } else {
                     if (backIfNotMatch) {
-                        snapshot.goBack(this);
+                        snapshot.restore();
                     }
                     return false;
                 }
