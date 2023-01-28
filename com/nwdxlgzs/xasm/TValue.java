@@ -130,6 +130,16 @@ public class TValue implements Serializable {
         return ts;
     }
 
+    public static TValue createString(byte[] data, int length) {
+        return createString(data, 0, length);
+    }
+
+    public static TValue createString(byte[] data, int offset, int length) {
+        byte[] newData = new byte[length];
+        System.arraycopy(data, offset, newData, 0, length);
+        return createString(newData);
+    }
+
     public String toWarpString() {
         if (tt_ == LUA_TNIL) {
             return "\"nil\"";
