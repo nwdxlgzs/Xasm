@@ -231,7 +231,12 @@ public class bindInst {
                         code[j].isStartRealFake = true;
                         break;
                     }
-                    if (code[j].isCanJump2There || code[j].getOpCode() == OP_RETURN) {
+                    if (code[j].isCanJump2There ||
+                    code[j].getOpCode() == OP_RETURN ||
+                            code[j].getOpCode() == OP_TFORLOOP ||
+                            code[j].getOpCode() == OP_JMP ||
+                            code[j].getOpCode() == OP_FORLOOP ||
+                            code[j].getOpCode() == OP_FORPREP) {
                         boolean dobreak = false;
                         Instruction instruction2 = code[j];
                         switch (instruction2.getOpCode()) {
@@ -259,7 +264,12 @@ public class bindInst {
                         code[j].isEndRealFake = true;
                         break;
                     }
-                    if (code[j].isCanJump2There || code[j].getOpCode() == OP_RETURN) {
+                    if (code[j].isCanJump2There ||
+                            code[j].getOpCode() == OP_RETURN ||
+                            code[j].getOpCode() == OP_TFORLOOP ||
+                            code[j].getOpCode() == OP_JMP ||
+                            code[j].getOpCode() == OP_FORLOOP ||
+                            code[j].getOpCode() == OP_FORPREP) {
                         boolean dobreak = false;
                         Instruction instruction2 = code[j - 1];
                         switch (instruction2.getOpCode()) {
